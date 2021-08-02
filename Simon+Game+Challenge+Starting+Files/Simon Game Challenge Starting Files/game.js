@@ -8,7 +8,7 @@ $(document).keypress(function(){                //keypress to start the game
     if(started==false){
         $("h1").text("Level "+level);
         nextSequence();
-        started = true;
+        started = true;                         //so that further keypresses dont affect our code 
     }
 });
 
@@ -18,7 +18,7 @@ $(".btn").click(function(){
     userClickedPattern.push(userChosenColour);                  //remembering the pattern 
     playSound(userChosenColour);
     animatePress(userChosenColour);
-    checkAnswer(userClickedPattern.length-1)
+    checkAnswer(userClickedPattern.length-1)                    //on each button click, we call this function to check the answer
 })
 
 function nextSequence(){
@@ -49,24 +49,26 @@ function animatePress(currentColour){
     },100);
 }
 
+//function to check every input and call new sequence when particular level is cleared
 function checkAnswer(currentLevel){
-    if(userClickedPattern[currentLevel]===gamePattern[currentLevel]){
-        if(userClickedPattern.length===gamePattern.length){
+    if(userClickedPattern[currentLevel]===gamePattern[currentLevel]){       //checking each clicked array input against game pattern    
+        if(userClickedPattern.length===gamePattern.length){                 //if user clicked all correct inputs then call new sequence
             setTimeout(function(){
                 nextSequence();
             },1000);
         }
     } else{
-        playSound("wrong");
+        playSound("wrong");                                                 //custom changes when user clicks a wrong button
         $("body").addClass("game-over");
         setTimeout(function(){
             $("body").removeClass("game-over");
         },200);
         $("h1").text("Game Over, Press Any Key to Restart");
-        startover();
+        startover();                                                        //game restarts on wrong input
     }
 }
 
+//function to restart the game
 function startover(){
     started = false;
     level = 0;
