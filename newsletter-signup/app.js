@@ -50,7 +50,7 @@ app.post("/",function(req,res){
         })
     });
 
-    // request.write(jsonData);
+    request.write(jsonData);
     request.end();
 });
 
@@ -58,7 +58,7 @@ app.post("/failure.html",function(req,res){
     res.redirect("/")
 })
 
-app.listen(3000,function(){
+app.listen(process.env.PORT || 3000,function(){         //process.env.PORT is for heroku to choose their port and 3000 is our local port
     console.log("Server is running on port 3000.");
 });
 
