@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const date = require(__dirname+"/date.js");         //requiring locally created module
 
 const app = express();
 
@@ -12,16 +13,7 @@ app.use(bodyParser.urlencoded({extended:true}));        //for setting up body-pa
 app.use(express.static("public"));                      //for setting up static folder which contains css/js files to be rendered
 
 app.get("/",function(req,res){              //request to get the date
-    let today = new Date();
-    
-    let options = {                 //defined JS object for formatting date (as shown on stackoverflow)
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    };
-
-    let day = today.toLocaleDateString("en-US",options);        //first parameter is region, and second is options for formatting
-
+    let day = date.getDate();
     res.render("list",{listTitle : day,newListItems : items});       //if-else will take care of day, and will finally plugin the right value
 });
 
