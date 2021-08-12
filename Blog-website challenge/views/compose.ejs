@@ -1,0 +1,14 @@
+<%- include("partials/header") -%>     <!-- importing header file from a diff folder -->
+<h1>Compose</h1>
+<form action="/compose" method="POST">
+    <div class="form-group">
+        <label for="newPostTitle">Title</label>
+        <input class="form-control" type="text" name="postTitle" autocomplete="off">
+    </div>
+    <div class="form-group">
+        <label for="postBodyTitle">Post</label>
+        <textarea class="form-control" rows="5" cols="30" name="postBody"></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit" name="submitButton">Publish</button>
+</form>
+<%- include("partials/footer") -%> 

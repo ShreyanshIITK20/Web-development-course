@@ -17,10 +17,27 @@ app.use(express.static("public"));
 
 app.get("/",function(req,res){
   res.render("home",{startingContent : homeStartingContent});                 //this function automatically searches for an ejs file inside views folder, so just write its name. Second parameter here is the variables we are passing to EJS file
-})
+});
 
+app.get("/about",function(req,res){
+  res.render("about",{aboutText : aboutContent});
+});
 
+app.get("/contact",function(req,res){
+  res.render("contact",{contactText : contactContent});
+});
 
+app.get("/compose",function(req,res){
+  res.render("compose");
+});
+
+app.post("/compose",function(req,res){
+  const post = {
+    title : req.body.postTitle,
+    content: req.body.postBody
+  };
+
+});
 
 
 
