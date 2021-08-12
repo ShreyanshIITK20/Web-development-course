@@ -15,7 +15,9 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-
+app.get("/",function(req,res){
+  res.render("home",{startingContent : homeStartingContent});                 //this function automatically searches for an ejs file inside views folder, so just write its name. Second parameter here is the variables we are passing to EJS file
+})
 
 
 
