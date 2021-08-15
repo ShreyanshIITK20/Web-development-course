@@ -34,8 +34,8 @@ const item3 = new Item ({
 const defaultItems = [item1,item2,item3];                                           //made an array containing default 3 items
 
 const listSchema = {                                                                //schema of dynamic list which contains name of list and list contents in the same format as created in list schema
-  name : String,
-  items : [itemsSchema]
+  name: String,
+  items: [itemsSchema]
 };
 
 const List = mongoose.model("List",listSchema);                                     //creating list model with list schema
@@ -85,14 +85,25 @@ app.get("/:customListName",function(req,res){                                   
 app.post("/", function(req, res){
 
   const itemName = req.body.newItem;                                               //retrieve the input from ejs file using a form and saving it inside a const
-
+  const listName = req.body.listTitle;                                             //stores the value of the list name in which we want our newly added item to get added, we retrive this from the value attribute in the submit button
+  
   const item = new Item ({                                                         //created new record with the user input inside the Items collection
     name : itemName
   });
 
-  item.save();                                                                     //saving the record inside our collection
-  res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
-});
+  if(listName==="Today"){                                                            //if the list is our Today's list then redirect to home route
+    item.save();                                                                     //saving the record inside our collection
+    res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
+  }
+  else {                                                                             //else we will have to redirect to the dynamic route we made 
+    List.findOne({name:listName},function(err,foundList){                            //find the custom list and find the added item in that custom list
+      foundList.items.push(item);                                                    //appending the items list with the new item we created just above
+      foundList.save();
+      res.redirect("/"+listName);
+    });
+  }
+
+  });
 
 app.post("/delete",function(req,res){
   const checkecItemID = req.body.checkbox;
