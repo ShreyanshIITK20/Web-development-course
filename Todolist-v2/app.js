@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 mongoose.connect("mongodb://localhost:27017/todolistDB",{useNewUrlParser:true});    //connecting mongoose to port 27017
 
-const itemsSchema = {
+const itemsSchema = {                                                               //format or schema of the list we are creating
   name : String
 };
 
@@ -33,6 +33,13 @@ const item3 = new Item ({
 
 const defaultItems = [item1,item2,item3];                                           //made an array containing default 3 items
 
+const listSchema = {                                                                //schema of dynamic list which contains name of list and list contents in the same format as created in list schema
+  name : String,
+  items : [itemsSchema]
+};
+
+const List = mongoose.model("List",listSchema);                                     //creating list model with list schema
+
 app.get("/", function(req, res) {
 
   Item.find({},function(err,foundItems){                                            //{} signifies that we are finding everything inside the array and foundItems is the name given to the result of our operation, which will be logged on screen
@@ -50,6 +57,30 @@ app.get("/", function(req, res) {
 
 
 });
+
+app.get("/:customListName",function(req,res){                                      //creating a dynamic list route with express's params feature
+  const customListName = req.params.customListName;
+
+  List.findOne({name:customListName},function(err,foundList){                       //this returns a single object in return if its found where as .find returns the array of found items. IT is used to find whether we have the following list created earlier or not
+    if(!err){
+      if(!foundList){                                                               //create a new list
+        const list = new List({
+          name : customListName,
+          items : defaultItems
+        });
+      
+        list.save();
+        res.redirect("/"+customListName);                                             //to redirect to the new dynamic webpage with a new list we just saved into our database
+      }
+      else{                                                                         //open an existing list
+        res.render("list",{listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  });
+
+})
+
+
 
 app.post("/", function(req, res){
 
