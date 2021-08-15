@@ -85,18 +85,20 @@ app.get("/:customListName",function(req,res){                                   
 app.post("/", function(req, res){
 
   const itemName = req.body.newItem;                                               //retrieve the input from ejs file using a form and saving it inside a const
-  const listName = req.body.listTitle;                                             //stores the value of the list name in which we want our newly added item to get added, we retrive this from the value attribute in the submit button
-  
+  const listName = req.body.list;                                             //stores the value of the list name in which we want our newly added item to get added, we retrive this from the value attribute in the submit button
+  console.log(listName);
   const item = new Item ({                                                         //created new record with the user input inside the Items collection
     name : itemName
   });
 
-  if(listName==="Today"){                                                            //if the list is our Today's list then redirect to home route
+  if(listName===""){                                                            //if the list is our Today's list then redirect to home route
+    console.log("Succesful");
     item.save();                                                                     //saving the record inside our collection
     res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
   }
   else {                                                                             //else we will have to redirect to the dynamic route we made 
     List.findOne({name:listName},function(err,foundList){                            //find the custom list and find the added item in that custom list
+      console.log(foundList);
       foundList.items.push(item);                                                    //appending the items list with the new item we created just above
       foundList.save();
       res.redirect("/"+listName);
