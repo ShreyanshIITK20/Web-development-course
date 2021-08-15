@@ -32,14 +32,22 @@ const item3 = new Item ({
 });
 
 const defaultItems = [item1,item2,item3];                                           //made an array containing default 3 items
-Item.insertMany(defaultItems,function(err){
-  if(err) console.log(err);
-  else console.log("Successfully added items to the database")
-});
 
 app.get("/", function(req, res) {
 
-  res.render("list", {listTitle: "Today", newListItems: items});
+  Item.find({},function(err,foundItems){                                            //{} signifies that we are finding everything inside the array and foundItems is the name given to the result of our operation, which will be logged on screen
+    if(foundItems.length===0){                                                      //this helps in preventing adding items to database everytime we re-run our server, it will only add items when array length = 0 (empty)
+      Item.insertMany(defaultItems,function(err){                                   //inserted the default item array in our Item collection
+        if(err) console.log(err);
+        else console.log("Successfully added items to the database")
+      });
+      res.redirect("/");                                                            //Now after adding items to database it will redirct to home directory and will now move to else block to actually render the array
+    } else {
+      res.render("list", {listTitle: "Today", newListItems: foundItems});             //render list.ejs and pass on the foundItems result to the array which shows different to-do items in ejs file
+    }
+    
+  });
+
 
 });
 
