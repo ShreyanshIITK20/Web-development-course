@@ -63,6 +63,16 @@ app.post("/", function(req, res){
   res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
 });
 
+app.post("/delete",function(req,res){
+  const checkecItemID = req.body.checkbox;
+
+  Item.findByIdAndRemove(checkecItemID,function(err){                              //selectively removes the checked item from the database
+    if(!err) console.log("Successfully deleted the checked item");
+    res.redirect("/");                                                             //redirecting to home route to see the changed webpage with deleted item
+  });
+
+});
+
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
 });
