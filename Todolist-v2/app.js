@@ -53,15 +53,14 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;                                               //retrieve the input from ejs file using a form and saving it inside a const
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  const item = new Item ({                                                         //created new record with the user input inside the Items collection
+    name : itemName
+  });
+
+  item.save();                                                                     //saving the record inside our collection
+  res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
 });
 
 app.get("/work", function(req,res){
