@@ -13,7 +13,7 @@ mongoose.set('useFindAndModify', false);
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb+srv://admin-shreyansh:rangeroverlove@cluster0.cihvc.mongodb.net/todolistDB",{useNewUrlParser:true,useUnifiedTopology: true});    //connecting mongoose to port 27017
+mongoose.connect("mongodb+srv://admin-shreyansh:PASSWORD@cluster0.cihvc.mongodb.net/todolistDB",{useNewUrlParser:true,useUnifiedTopology: true});    //connecting mongoose to port 27017
 
 const itemsSchema = {                                                               //format or schema of the list we are creating
   name : String
