@@ -3,15 +3,17 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");                                               //importing mongoose
+const _ = require("lodash");
 
 const app = express();
 
 app.set('view engine', 'ejs');
+mongoose.set('useFindAndModify', false);
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todolistDB",{useNewUrlParser:true});    //connecting mongoose to port 27017
+mongoose.connect("mongodb://localhost:27017/todolistDB",{useNewUrlParser:true,useUnifiedTopology: true});    //connecting mongoose to port 27017
 
 const itemsSchema = {                                                               //format or schema of the list we are creating
   name : String
@@ -59,7 +61,7 @@ app.get("/", function(req, res) {
 });
 
 app.get("/:customListName",function(req,res){                                      //creating a dynamic list route with express's params feature
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);                  //lodash function to capitalise the first letter of input directory
 
   List.findOne({name:customListName},function(err,foundList){                       //this returns a single object in return if its found where as .find returns the array of found items. IT is used to find whether we have the following list created earlier or not
     if(!err){
@@ -91,7 +93,7 @@ app.post("/", function(req, res){
     name : itemName
   });
 
-  if(listName===""){                                                            //if the list is our Today's list then redirect to home route
+  if(listName==="Today"){                                                            //if the list is our Today's list then redirect to home route
     console.log("Succesful");
     item.save();                                                                     //saving the record inside our collection
     res.redirect("/");                                                               //redirecting to home route so that newly formed list can be rendered there by entering else block
@@ -108,13 +110,22 @@ app.post("/", function(req, res){
   });
 
 app.post("/delete",function(req,res){
-  const checkecItemID = req.body.checkbox;
-
-  Item.findByIdAndRemove(checkecItemID,function(err){                              //selectively removes the checked item from the database
-    if(!err) console.log("Successfully deleted the checked item");
-    res.redirect("/");                                                             //redirecting to home route to see the changed webpage with deleted item
-  });
-
+  const checkecItemID = req.body.checkbox;                                         //retrieving the item id to be deleted
+  const listName = req.body.listName;                                              //retrieving the list name where deletion is to be carried out
+  
+  if(listName==="Today"){
+    Item.findByIdAndRemove(checkecItemID,function(err){                              //selectively removes the checked item from the database
+      if(!err) console.log("Successfully deleted item from home route");
+      res.redirect("/");                                                             //redirecting to home route to see the changed webpage with deleted item
+    });
+  } else {
+    List.findOneAndUpdate({name:listName},{$pull:{items:{_id:checkecItemID}}},function(err,foundList){    //first argument queries the name with saved listName inside the collection List, then in 2nd argument we specify update statement wherein we pull by using mongoDB function $pull which first finds the item with id inside the list found, and then use callback function for error and result
+      if(!err){
+        console.log("Succesfully deleted one item from dynamic list");
+        res.redirect("/"+listName);
+      }
+    });
+  }
 });
 
 app.get("/work", function(req,res){

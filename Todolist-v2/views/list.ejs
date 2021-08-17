@@ -8,9 +8,10 @@
     <% newListItems.forEach(function(item){ %>
         <form action="/delete" method="post">
           <div class="item">
+            <input type="hidden" name="listName" value="<%=listTitle%>">
             <input type="checkbox" name="checkbox" value="<%= item._id %>" onChange="this.form.submit()">       <!--onchange allows us to submit the form when checkbox is clicked and value stores the ID of the item checked so that we can identify uniquely that box-->
             <p><%=  item.name  %></p>         <!--only diplaying the name of object instead of whole JS object-->    
-          </div>
+          </div> 
         </form>
     <% }) %>
       
