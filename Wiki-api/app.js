@@ -22,6 +22,8 @@ const articleSchema = {
 
 const Article = mongoose.model("Article",articleSchema);
 
+/////////////////////////////////////////////////REQUEST TARGETING ALL ARTICLES///////////////////////////////////////////////////////////
+
 app.route("/articles")                                                 //using EXPRESS's route method to combine multiple methods into a single block of code instead of calling out get/post/delete seperately for same route
 
 .get(function(req,res){
@@ -54,6 +56,46 @@ app.route("/articles")                                                 //using E
         if(!err) res.send("Successfully deleted");
         else res.send(err);
     })
+});
+
+/////////////////////////////////////////////////REQUEST TARGETING A SPECIFIC ARTICLE/////////////////////////////////////////////////////
+
+app.route("/articles/:articleTitle")                                //dynamic url using express params
+
+.get(function(req,res){
+    Article.findOne({title: req.params.articleTitle},function(err,foundArticle){
+        if(!err) res.send(foundArticle);
+        else res.send("No article found");
+    });
+})
+
+.put(function(req,res){                                                     //here we are updating/replacing the article completely using the title and content provided by user 
+    Article.replaceOne(                                                      
+        {title: req.params.articleTitle},                                   //find article with this dynamic url name (condition)
+        {title: req.body.title, content: req.body.content},                 //update article with new title and content as provided by the form in body uusig bodyparser (some EJS file)
+        function(err){
+            if(!err) res.send("Successfully updated");
+        }
+    );
+})
+
+.patch(function(req,res){
+    Article.updateOne(
+        {title: req.params.articleTitle},
+        {$set: req.body},
+        function(err){
+            if(!err) res.send("Successfully patched");
+        }
+    );
+})
+
+.delete(function(req,res){
+    Article.deleteOne(
+        {title: req.body.title},
+        function(err){
+            if(!err) res.send("Successfully deleted");
+        }
+    );
 });
 
 app.listen(3000, function() {
