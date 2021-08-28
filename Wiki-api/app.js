@@ -22,7 +22,9 @@ const articleSchema = {
 
 const Article = mongoose.model("Article",articleSchema);
 
-app.get("/articles",function(req,res){
+app.route("/articles")                                                 //using EXPRESS's route method to combine multiple methods into a single block of code instead of calling out get/post/delete seperately for same route
+
+.get(function(req,res){
     Article.find({},function(err,foundArticles){                        //tap into Article model, and find all the articles present in it and console log it
         // console.log(foundArticles);
         if(!err){
@@ -32,7 +34,7 @@ app.get("/articles",function(req,res){
     })
 })
 
-app.post("/articles",function(req,res){
+.post(function(req,res){
     console.log(req.body.title);
     console.log(req.body.content);
 
@@ -47,7 +49,7 @@ app.post("/articles",function(req,res){
     });
 })
 
-app.delete("/articles",function(req,res){
+.delete(function(req,res){
     Article.deleteMany(function(err){
         if(!err) res.send("Successfully deleted");
         else res.send(err);
