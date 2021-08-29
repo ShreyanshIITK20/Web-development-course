@@ -2,6 +2,7 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const express = require("express");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -13,10 +14,13 @@ app.use(bodyParser.urlencoded({
 
 mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true});
 
-const userSchema = {                                                            //schema for each user
+const userSchema = new mongoose.Schema({                                        //Mongoose schema for each user (not just simple JS object like we did earlier)
     email: String,
     password: String
-};
+});
+
+const secret = "thisismytopsecretyouknow!";
+userSchema.plugin(encrypt,{secret: secret, encryptedFields:["password"]});       //encryption plugin added to increase the functionality of schema and encrypt the password field of it
 
 const User = new mongoose.model("User",userSchema);                             //model for containing information of user
 
@@ -35,7 +39,6 @@ app.get("/register",function(req,res){
 
 //user will go to register page and enter an email and password which will be submitted as a POST request which we are required to catch now
 app.post("/register",function(req,res){
-    console.log(req.body.username);
     const newUser = new User({                          //created a new user's account using the information posted through register form
         email: req.body.username,
         password: req.body.password
@@ -54,6 +57,7 @@ app.post("/login",function(req,res){
     const password = req.body.password;
 
     User.findOne({email:username},function(err,foundUser){
+        console.log(foundUser);
         if(err) console.log(err);
         else {
             if(foundUser){                                          //foundUser = 0 if nobody found so it wont evaluate
