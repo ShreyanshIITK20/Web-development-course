@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const express = require("express");
 const mongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
+const md5 = require("md5");
+// const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -20,7 +21,7 @@ const userSchema = new mongoose.Schema({                                        
     password: String
 });
 
-userSchema.plugin(encrypt,{secret: process.env.SECRET, encryptedFields:["password"]});       //encryption plugin added to increase the functionality of schema and encrypt the password field of it
+// userSchema.plugin(encrypt,{secret: process.env.SECRET, encryptedFields:["password"]});       //encryption plugin added to increase the functionality of schema and encrypt the password field of it
 
 const User = new mongoose.model("User",userSchema);                             //model for containing information of user
 
@@ -41,7 +42,7 @@ app.get("/register",function(req,res){
 app.post("/register",function(req,res){
     const newUser = new User({                          //created a new user's account using the information posted through register form
         email: req.body.username,
-        password: req.body.password
+        password: md5(req.body.password)
     });
     
     newUser.save(function(err){
@@ -54,7 +55,7 @@ app.post("/register",function(req,res){
 //For the login page user will come and enter his email and password and we will have to check whether an account with those credentials exist or not in our database
 app.post("/login",function(req,res){
     const username = req.body.username;
-    const password = req.body.password;
+    const password = md5(req.body.password);
 
     User.findOne({email:username},function(err,foundUser){
         if(err) console.log(err);
