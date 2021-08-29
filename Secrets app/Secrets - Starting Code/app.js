@@ -1,3 +1,4 @@
+require('dotenv').config();                                                      //configuring environment variable
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const express = require("express");
@@ -19,8 +20,7 @@ const userSchema = new mongoose.Schema({                                        
     password: String
 });
 
-const secret = "thisismytopsecretyouknow!";
-userSchema.plugin(encrypt,{secret: secret, encryptedFields:["password"]});       //encryption plugin added to increase the functionality of schema and encrypt the password field of it
+userSchema.plugin(encrypt,{secret: process.env.SECRET, encryptedFields:["password"]});       //encryption plugin added to increase the functionality of schema and encrypt the password field of it
 
 const User = new mongoose.model("User",userSchema);                             //model for containing information of user
 
@@ -57,7 +57,6 @@ app.post("/login",function(req,res){
     const password = req.body.password;
 
     User.findOne({email:username},function(err,foundUser){
-        console.log(foundUser);
         if(err) console.log(err);
         else {
             if(foundUser){                                          //foundUser = 0 if nobody found so it wont evaluate
