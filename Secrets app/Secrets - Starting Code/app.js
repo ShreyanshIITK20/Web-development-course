@@ -34,7 +34,8 @@ mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true});
 const userSchema = new mongoose.Schema({                                        //Mongoose schema for each user (not just simple JS object like we did earlier)
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: String
 });
 
 userSchema.plugin(passportLocalMongoose);                                       //used to hash and salt our passwords and save the user in mongoDB database
@@ -103,12 +104,44 @@ app.get("/register",function(req,res){
 });
 
 app.get("/secrets",function(req,res){
-    //if the user is authenticated then render the secrets page else do not render it and send the user (redirect) back to login page
+    //this is an anonymous page so anyone can view all the secrets at one place so no authentication needed for this
+    //now we need to display all the secrets that our database has (of all users), for that we will search for entries in our database which has non empty 'secret' field
+    
+    User.find({"secret":{$ne:null}},function(err,foundUsers){
+        if(err) console.log(err);
+        else{
+            if(foundUsers){
+                res.render("secrets",{userWithSecrets:foundUsers});             //userWithSecrets is used to render the contents in our ejs file, wherein we will loop through all the users and their secrets
+            }
+        }
+    });
+});
+
+app.get("/submit",function(req,res){
     if(req.isAuthenticated()){
-        res.render("secrets");
+        res.render("submit");
     } else{
         res.redirect("/login");                                      //not just rendering, we are sending them back to the login route if not authenticated
     }
+});
+
+app.post("/submit",function(req,res){
+    const submittedSecret = req.body.secret;                         //retrieve the secret sent in by the user on secret.ejs page
+
+    //now we want to find the current (logged in) user's database and save this secret into his database. Passport very smartly saves the current user in 'req' 
+    //for storing secret we need to also include secret in the schema
+
+    User.findById(req.user.id,function(err,foundUser){                  //find the user database with the currently logged in session's information and add the secret 
+        if(err) console.log(err);
+        else{
+            if(foundUser){                                              //if found the user then add secret to its database
+                foundUser.secret = submittedSecret;
+                foundUser.save(function(){
+                    res.redirect("/secrets");                           //when submitted and saved successfully then redirect to the secrets page to check all the secrets
+                });
+            }
+        }
+    });
 });
 
 //user will go to register page and enter an email and password which will be submitted as a POST request which we are required to catch now
