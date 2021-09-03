@@ -9,7 +9,8 @@ const mongoose = require("mongoose");
 const session = require("express-session");                                      //we need to import 3 new modules to be able to set authentication using passport
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
-
+const GoogleStrategy = require('passport-google-oauth20').Strategy;               //Google OAuth package
+const findOrCreate = require("mongoose-findorcreate");                            //Used in Google authentication using passport
 
 const app = express();
 
@@ -32,18 +33,43 @@ mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true});
 
 const userSchema = new mongoose.Schema({                                        //Mongoose schema for each user (not just simple JS object like we did earlier)
     email: String,
-    password: String
+    password: String,
+    googleId: String
 });
 
 userSchema.plugin(passportLocalMongoose);                                       //used to hash and salt our passwords and save the user in mongoDB database
+userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User",userSchema);                             //model for containing information of user
 
 //below 3 line code is the heart of using passport, and here is serialize (create cookies) and then deserialize (destrpy them) according to the situation
 passport.use(User.createStrategy());
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.serializeUser(function(user, done) {                                   //general code for serialising and deserialing any kind of strategy
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user) {
+      done(err, user);
+    });
+  });
+
+passport.use(new GoogleStrategy({                                               //this must be placed after the serialise and deserialise code
+    
+    clientID: process.env.CLIENT_ID,                                            //ID,secret provided by Google along with redirect URL setup on Google dev platform
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/google/secrets",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    console.log(profile);
+    
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
 
 app.get("/logout",function(req,res){                                            //logout route only defined in case of passport authentication which deserialize the user
     req.logout();
@@ -52,6 +78,20 @@ app.get("/logout",function(req,res){                                            
 
 app.get("/",function(req,res){
     res.render("home");
+});
+
+app.get("/auth/google",                                                        //route where the google signin or register button will redirect to
+    //here we are supposed to authenticate the use using the passport
+    passport.authenticate('google',{scope:["profile"]})  
+);
+
+app.get("/auth/google/secrets",                                               //this is the route which google will call after its authentication 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect to secrets page.
+    res.redirect('/secrets');
+
+    //this will send a request to /secrets route where we have already set up a authentication, which will check if the user is authenticated or not
 });
 
 app.get("/login",function(req,res){
